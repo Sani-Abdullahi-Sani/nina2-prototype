@@ -1,6 +1,6 @@
 """
 router.py — Intent classification for Nina 2.0 prototype.
-
+"""
 
 CATEGORIES = ["policy", "organization", "procedure", "hybrid"]
 
