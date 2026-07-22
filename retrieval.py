@@ -1,15 +1,6 @@
 """
 retrieval.py — Knowledge source retrieval for Nina 2.0 prototype.
 
-PROTOTYPE NOTE: Loads 3 small local mock files and does simple keyword /
-substring matching to find the most relevant chunk. This proves the
-"route to the right source, then retrieve" pattern without needing a
-real vector index.
-
-PRODUCTION RECOMMENDATION: Replace the load/search functions here with
-Foundry IQ queries against live SharePoint (see pitch deck Appendix E).
-The return shape (chunks with source + score) is kept stable so the rest
-of the app doesn't need to change when this is swapped out.
 """
 
 import csv
