@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+nina_log.db
+start_nina.bat
+.env
