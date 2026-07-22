@@ -3,27 +3,6 @@ app.py — Nina 2.0 prototype (3-day Build-to-Learn version).
 
 Run with:  streamlit run app.py
 
-This proves the pattern: Intent Router -> Multi-source Retrieval ->
-Confidence-aware Synthesis -> Logged for governance — using tools that
-let us iterate fast. See README.md for what maps to production and how.
-
-PERMISSION-AWARE RETRIEVAL:
-When AZURE_SEARCH_QUERY_KEY is set, the Ask tab queries the real Azure
-AI Search index with a security filter built from the selected user's
-Entra ID group membership (see retrieval.py). The permission-aware path
-does NOT fall back to local mock retrieval on empty results — an empty
-result there almost always means the user's access correctly excluded
-everything relevant, and falling back would leak unfiltered content.
-
-NETWORK RESILIENCE:
-If the Azure AI Search call fails due to a connectivity issue (flaky
-network, VPN, DNS), retrieval.py catches it, sets
-retrieval.SEARCH_TEMPORARILY_UNAVAILABLE, and returns no chunks rather
-than letting the exception propagate. run_pipeline() checks that flag
-and returns a clear "temporarily unavailable, please retry" result
-instead of calling the LLM on empty context or letting Streamlit crash
-with a raw traceback — important for demo day, where one bad Wi-Fi
-moment shouldn't take down the whole app.
 """
 
 import streamlit as st
@@ -39,33 +18,6 @@ for k, v in st.secrets.items():
 
 st.set_page_config(page_title="Nina 2.0 Prototype", page_icon="🧭", layout="wide")
 db.init_db()
-
-# ---- Real Nina 1.0 failures, captured verbatim from live testing ----
-# Currently unused in the UI (Replay tab removed — see module docstring).
-# Kept here for reference / easy reintroduction later.
-REPLAY_CASES = [
-    {
-        "question": "Who is the IT Manager in NEPL",
-        "nina1_answer": "The requested information is not available in the retrieved data. "
-                         "Please try another query or topic.",
-    },
-    {
-        "question": "Do you know the new NEPL organogram?",
-        "nina1_answer": "The requested information is not available in the retrieved data. "
-                         "Please try another query or topic.",
-    },
-    {
-        "question": "Tell me what you know about project sigma",
-        "nina1_answer": "The requested information is not available in the retrieved data. "
-                         "Please try another query or topic.",
-    },
-    {
-        "question": "Do I accrue annual leave while on sick leave?",
-        "nina1_answer": "There is no explicit mention of whether annual leave continues to "
-                         "accrue while an employee is on sick leave... it is recommended to "
-                         "consult the NNPC Limited HCM team.",
-    },
-]
 
 
 def run_pipeline(question: str, user_email: str = None):
