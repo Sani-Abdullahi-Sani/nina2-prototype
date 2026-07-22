@@ -1,12 +1,6 @@
 """
 db.py — Question logging for the Admin dashboard.
 
-PROTOTYPE NOTE: Logs every question to a local SQLite file so the Admin tab
-has something real to show, live, in the demo.
-
-PRODUCTION RECOMMENDATION: Replace with LangFuse (already in the tech stack
-in the pitch deck) — this gives the same visibility (what Nina can't answer)
-as a permanent, always-on feature instead of a one-off manual benchmark.
 """
 
 import os
