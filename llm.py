@@ -1,28 +1,7 @@
 """
 llm.py — Answer synthesis for Nina 2.0 prototype.
 
-PROTOTYPE NOTE: If AZURE_OPENAI_API_KEY / AZURE_OPENAI_ENDPOINT are set as
-environment variables, this calls real Azure OpenAI. If they are NOT set,
-it falls back to a simple offline template-based synthesizer so the
-prototype still runs and demos live without needing credentials in the room.
 
-PRODUCTION RECOMMENDATION: This module maps directly onto the "Azure OpenAI
-(synthesis)" box in the architecture diagram — swap the offline fallback
-for a real endpoint and nothing else in the app changes.
-
-IDENTITY & GREETING HANDLING:
-The main synthesis prompt deliberately instructs the model to answer
-company-fact questions using ONLY retrieved context — this is what keeps
-Nina from hallucinating on real policy/procedure questions, and it's
-working as intended. The side effect is that a strictly-grounded model
-also can't state its own name, and treats small talk ("hello", "hey")
-as a failed document search rather than a greeting. Rather than loosen
-the grounding instruction (which would risk it also answering real
-questions from general knowledge), both identity questions ("who are
-you") and plain greetings ("hello", "hi") are detected and answered
-directly from fixed strings, bypassing retrieval entirely. Every actual
-content question still goes through full retrieval-only grounding,
-unchanged.
 """
 
 import os
