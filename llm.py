@@ -10,18 +10,19 @@ PRODUCTION RECOMMENDATION: This module maps directly onto the "Azure OpenAI
 (synthesis)" box in the architecture diagram — swap the offline fallback
 for a real endpoint and nothing else in the app changes.
 
-IDENTITY HANDLING:
+IDENTITY & GREETING HANDLING:
 The main synthesis prompt deliberately instructs the model to answer
 company-fact questions using ONLY retrieved context — this is what keeps
 Nina from hallucinating on real policy/procedure questions, and it's
 working as intended. The side effect is that a strictly-grounded model
-also can't state its own name, since "who is Nina" isn't a fact in any
-indexed document. Rather than loosen the grounding instruction (which
-would risk it also answering real questions from general knowledge),
-identity/meta questions ("who are you", "what can you do") are detected
-and answered directly from a fixed persona string, bypassing retrieval
-entirely. Every actual content question still goes through full
-retrieval-only grounding, unchanged.
+also can't state its own name, and treats small talk ("hello", "hey")
+as a failed document search rather than a greeting. Rather than loosen
+the grounding instruction (which would risk it also answering real
+questions from general knowledge), both identity questions ("who are
+you") and plain greetings ("hello", "hi") are detected and answered
+directly from fixed strings, bypassing retrieval entirely. Every actual
+content question still goes through full retrieval-only grounding,
+unchanged.
 """
 
 import os
@@ -36,13 +37,17 @@ CONFIDENCE_HEDGE = 0.12    # above this but below ANSWER: hedge / partial match
 # below CONFIDENCE_HEDGE: escalate, don't guess
 
 NINA_IDENTITY = (
-    "I'm Nina 2.0, NNPC's internal AI knowledge assistant. I help employees find "
+    "I'm Nina 2.0 — NNPC's internal AI knowledge assistant. I help employees find "
     "answers from company policies, SOPs, HR guidance, and organizational knowledge, "
     "grounded in what's actually in our knowledge base, with citations so you know "
     "where each answer came from. Ask me anything about company policy, procedures, "
-    "or where to find something, and I'll only answer from documents you have "
-    "access to."
+    "or where to find something, and I'll only answer from documents you're "
+    "authorized to see."
 )
+
+NINA_GREETING = (
+    "Hello! How can I help you today?"
+    )
 
 # Meta/identity questions — matched loosely so common phrasings all hit this
 # path instead of going through document retrieval, where they'd find nothing.
@@ -58,9 +63,27 @@ _IDENTITY_PATTERNS = [
 ]
 _identity_re = re.compile("|".join(_IDENTITY_PATTERNS), re.IGNORECASE)
 
+# Plain greetings with no real question content — matched as a whole-message
+# pattern (allowing trailing punctuation/whitespace) so this doesn't
+# accidentally swallow a real question that merely starts with "hi, ...".
+_GREETING_PATTERNS = [
+    r"^hi+!?$",
+    r"^hello!?$",
+    r"^hey!?$",
+    r"^hiya!?$",
+    r"^good (morning|afternoon|evening)!?$",
+    r"^how (are you|are you doing|is it going)\??$",
+    r"^what'?s up\??$",
+]
+_greeting_re = re.compile("|".join(_GREETING_PATTERNS), re.IGNORECASE)
+
 
 def _is_identity_question(question: str) -> bool:
     return bool(_identity_re.search(question.strip()))
+
+
+def _is_greeting(question: str) -> bool:
+    return bool(_greeting_re.match(question.strip()))
 
 
 def _offline_synthesize(question, chunks):
@@ -119,10 +142,13 @@ def answer(question: str, chunks: list):
     tier is one of: "answered" | "hedged" | "not_found"
     This is the 3-tier confidence behavior from the benchmark taxonomy.
     """
-    # Identity/meta questions bypass retrieval entirely — see module
-    # docstring for why. This runs before the "no chunks" check below,
-    # since identity questions should answer even if retrieval found
-    # nothing relevant (which is the normal case for "who are you").
+    # Greetings and identity/meta questions bypass retrieval entirely — see
+    # module docstring for why. These run before the "no chunks" check
+    # below, since both should answer even though retrieval would find
+    # nothing relevant for either (which is the normal, expected case).
+    if _is_greeting(question):
+        return {"tier": "answered", "text": NINA_GREETING, "sources": []}
+
     if _is_identity_question(question):
         return {"tier": "answered", "text": NINA_IDENTITY, "sources": []}
 
