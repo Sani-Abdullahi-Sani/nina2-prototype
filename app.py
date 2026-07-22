@@ -7,25 +7,6 @@ This proves the pattern: Intent Router -> Multi-source Retrieval ->
 Confidence-aware Synthesis -> Logged for governance — using tools that
 let us iterate fast. See README.md for what maps to production and how.
 
-PERMISSION-AWARE RETRIEVAL:
-When AZURE_SEARCH_QUERY_KEY is set, the Ask tab queries the real Azure
-AI Search index with a security filter built from the selected user's
-Entra ID group membership (see retrieval.py). The permission-aware path
-does NOT fall back to local mock retrieval on empty results — an empty
-result there almost always means the user's access correctly excluded
-everything relevant, and falling back would leak unfiltered content.
-
-NETWORK RESILIENCE:
-If the Azure AI Search call fails due to a connectivity issue (flaky
-network, VPN, DNS), retrieval.py catches it, sets
-retrieval.SEARCH_TEMPORARILY_UNAVAILABLE, and returns no chunks rather
-than letting the exception propagate. run_pipeline() checks that flag
-and returns a clear "temporarily unavailable, please retry" result
-instead of calling the LLM on empty context or letting Streamlit crash
-with a raw traceback — important for demo day, where one bad Wi-Fi
-moment shouldn't take down the whole app.
-"""
-
 import streamlit as st
 
 import db
