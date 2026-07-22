@@ -112,10 +112,10 @@ tab_chat, tab_admin = st.tabs(["💬 Ask Nina 2.0", "📊 Admin Dashboard"])
 # ============================================================
 with tab_chat:
     st.subheader("Nina 2.0")
-    st.caption(
-        #"Prototype knowledge base: HR policy · IT procedures & current initiatives · "
-        #"Org directory "
-    )
+    #st.caption(
+    #    "Prototype knowledge base: HR policy · IT procedures & current initiatives · "
+    #    "Org directory "
+    #)
 
     selected_user = st.selectbox(
         "Signed in as:",
