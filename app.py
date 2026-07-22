@@ -33,6 +33,10 @@ import llm
 import router
 import retrieval
 
+import os
+for k, v in st.secrets.items():
+    os.environ[k] = str(v)
+
 st.set_page_config(page_title="Nina 2.0 Prototype", page_icon="🧭", layout="wide")
 db.init_db()
 
