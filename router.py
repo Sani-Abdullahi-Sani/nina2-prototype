@@ -1,14 +1,6 @@
 """
 router.py — Intent classification for Nina 2.0 prototype.
 
-PROTOTYPE NOTE: This uses simple keyword rules to classify intent in milliseconds
-with zero cost, so the prototype is fast and demoable offline.
-
-PRODUCTION RECOMMENDATION: Replace this with a small fine-tuned classifier
-(MiniLM / DistilBERT) as described in the pitch deck (Appendix B). The interface
-below (classify() returning a label + confidence) is deliberately kept the same
-shape so swapping the implementation later doesn't require changing app.py.
-"""
 
 CATEGORIES = ["policy", "organization", "procedure", "hybrid"]
 
